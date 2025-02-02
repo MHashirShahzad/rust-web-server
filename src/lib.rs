@@ -45,7 +45,7 @@ impl ThreadPool {
     {
         let job = Box::new(f);
 
-        self.sender.send(job).unwrap();
+        self.sender.send(job).expect("Error sending job to thread");
     }
 }
 
@@ -57,7 +57,11 @@ struct Worker {
 impl Worker {
     fn new(id: usize, receiver: Arc<Mutex<mpsc::Receiver<Job>>>) -> Worker {
         let thread = thread::spawn(move || loop {
-            let job = receiver.lock().unwrap().recv().unwrap();
+            let job = receiver
+                .lock()
+                .expect("Error unlocking mutex")
+                .recv()
+                .expect("Error recieving job");
 
             println!("Worker {id} got a job; executing.");
 
